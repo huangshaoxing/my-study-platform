@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>我的AI学习平台</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .ai-box {
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>欢迎来到我的学习平台！</h1>
+    <div class="ai-box">
+        <h3>AI学习助手</h3>
+        <input type="text" id="question" placeholder="输入你的问题">
+        <button onclick="askAI()">提问</button>
+        <div id="answer"></div>
+    </div>
+    <div class="ai-box">
+        <h3>学习笔记</h3>
+        <textarea id="note" rows="5" style="width:100%"></textarea>
+        <button onclick="saveNote()">保存笔记</button>
+        <div id="notesList"></div>
+    </div>
+    
+    <script>
+        // 笔记功能
+        function saveNote() {
+            const note = document.getElementById('note').value;
+            const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            notes.push(note);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            showNotes();
+        }
+    
+        function showNotes() {
+            const notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            document.getElementById('notesList').innerHTML = 
+                notes.map((n, i) => `<div>${i+1}. ${n}</div>`).join('');
+        }
+    
+        // 页面加载时显示已有笔记
+        window.onload = showNotes;
+    </script>
+
+    <script>
+        // 这里稍后添加AI功能
+        const DEEPSEEK_API_KEY = 'sk-36829aea9ab2449a9c0cf90135ecc96e'; // 替换成真实密钥
+
+async function askAI() {
+    const question = document.getElementById('question').value;
+    const answerDiv = document.getElementById('answer');
+    
+    answerDiv.innerHTML = "AI正在思考中...";
+
+    try {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                    { role: "system", content: "你是一个专业的学习助手，用中文简洁回答问题" },
+                    { role: "user", content: question }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        answerDiv.innerHTML = data.choices[0].message.content;
+    } catch (error) {
+        answerDiv.innerHTML = "出错了，请稍后再试";
+    }
+}   
+    </script>
+</body>
+</html>
